@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "ts-node ./index.ts",
-    "start:dev": "nodemon ./index.ts",
+    "start": "tsx ./index.ts",
+    "start:dev": "tsx watch ./index.ts",
     "lint:fix": "npx eslint src/**/*.ts --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,17 +15,18 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^20.11.18",
+    "@types/uuid": "^9.0.8",
     "@types/ws": "^8.5.10",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
-    "nodemon": "^2.0.16",
     "prettier": "3.2.5",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.7.1",
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "uuid": "^9.0.1",
     "ws": "^8.16.0"
   }
 }
