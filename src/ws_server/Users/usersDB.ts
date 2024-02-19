@@ -1,16 +1,4 @@
-interface IUser {
-  name: string;
-  password: string;
-}
+import { IUser, IWinner } from "../../types/types";
 
 export const Users: IUser[] = [];
-
-export const addUser = (userData: unknown) => {
-  if (typeof userData !== "string") {
-    return null;
-  } else {
-    const data = JSON.parse(userData);
-    Users.push(data);
-    console.log("User added ", Users);
-  }
-};
+export const Winners: IWinner[] = [];

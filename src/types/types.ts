@@ -17,3 +17,13 @@ export enum ServerCommands {
   TURN = "turn",
   FINISH = "finish",
 }
+
+export interface IUser {
+  name: string;
+  password: string;
+}
+
+export interface IWinner {
+  name: string;
+  wins: number;
+}
