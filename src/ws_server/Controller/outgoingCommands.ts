@@ -1,16 +1,46 @@
 import WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
-import { IGame, ServerCommands, TypeAttackStatus } from "../../types/types";
-import { Winners, getUser } from "../Users/usersDB";
+import {
+  IGame,
+  IUser,
+  ServerCommands,
+  TypeAttackStatus,
+} from "../../types/types";
+import { Users, Winners, getUser } from "../Users/usersDB";
 import { WSConnections } from "../Connections/ws-connection";
 import { roomsList } from "../Room";
 import { Games } from "../Games/games";
+import { validatePassword, validateUserName } from "../../utils";
 
-export const regConfirmation = (name: string, id: string, ws: WebSocket) => {
+export const regResponse = (user: IUser, ws: WebSocket) => {
+  const dataMessage = {
+    error: true,
+    errorText: "",
+    name: user.name,
+    id: user.id,
+  };
+  if (Users.find((u) => u.name === user.name)) {
+    const existingUser = Users.find((u) => u.name === user.name);
+    if (existingUser?.password === user.password) {
+      dataMessage.error = false;
+    } else {
+      dataMessage.errorText = "Wrong password";
+    }
+  } else {
+    const isUserNameValid = validateUserName(user.name);
+    const isPasswordValid = validatePassword(user.password);
+    if (isUserNameValid || isPasswordValid) {
+      dataMessage.errorText = isUserNameValid || isPasswordValid || "";
+    } else {
+      Users.push(user);
+      dataMessage.error = false;
+    }
+  }
+
   ws.send(
     JSON.stringify({
       type: ServerCommands.REG,
-      data: JSON.stringify({ error: false, errorText: "", name, id }),
+      data: JSON.stringify(dataMessage),
       id: 0,
     })
   );

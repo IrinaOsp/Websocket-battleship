@@ -1,12 +1,12 @@
 import { WebSocket } from "ws";
 import { v4 as uuidv4 } from "uuid";
 import { IRoom, IUser, PlayersCommands } from "../../types/types";
-import { Users, getUser } from "../Users/usersDB";
+import { getUser } from "../Users/usersDB";
 import {
   attackMessage,
   createGame,
   finish,
-  regConfirmation,
+  regResponse,
   startGame,
   turn,
   updateRoom,
@@ -22,46 +22,26 @@ import {
   createBoard,
 } from "../Boards/boards";
 
-export const regUser = (userData: unknown, ws: WebSocket, id: string) => {
-  if (typeof userData !== "string") {
-    return null;
-  } else {
-    try {
-      const data = JSON.parse(userData);
-      if (Users.find((user) => user.name === data.name)) {
-        ws.send(
-          JSON.stringify({
-            type: PlayersCommands.REG,
-            data: JSON.stringify({
-              error: true,
-              errorText: "User exists",
-              name: data.name,
-              id,
-            }),
-            id: 0,
-          })
-        );
-        throw new Error("User with this name already exists");
-      }
-      const user: IUser = {
-        name: data.name,
-        password: data.password,
-        id,
-      };
-      Users.push(user);
-      WSConnections[id] = ws;
-      regConfirmation(data.name, id, ws);
-      updateRoom();
-      updateWinners();
-    } catch (error) {
-      ws.send(
-        JSON.stringify({
-          type: PlayersCommands.REG,
-          data: JSON.stringify({ error: true, errorText: error }),
-          id: 0,
-        })
-      );
-    }
+export const regUser = (data: string, ws: WebSocket, id: string) => {
+  try {
+    const { name, password } = JSON.parse(data);
+    const user: IUser = {
+      name: name.trim(),
+      password: password.trim(),
+      id,
+    };
+    WSConnections[id] = ws;
+    regResponse(user, ws);
+    updateRoom();
+    updateWinners();
+  } catch (error) {
+    ws.send(
+      JSON.stringify({
+        type: PlayersCommands.REG,
+        data: JSON.stringify({ error: true, errorText: error }),
+        id: 0,
+      })
+    );
   }
 };
 
@@ -139,7 +119,6 @@ export const attack = (data: string) => {
     throw new Error("Enemy or enemy board not found");
   }
   const status = checkAttack(enemyBoard, x, y);
-  console.log(status);
   if (status === "killed") {
     const isFinal = checkIfFinal(enemyBoard);
     if (isFinal) {

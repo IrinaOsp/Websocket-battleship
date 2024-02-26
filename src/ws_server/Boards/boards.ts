@@ -26,7 +26,6 @@ export const createBoard = (ships: TypeBoard, playerId: string) => {
       }
     }
   });
-  console.log(board);
 
   Boards.set(playerId, board);
 };
@@ -36,7 +35,6 @@ export const checkAttack = (
   x: number,
   y: number
 ): TypeAttackStatus => {
-  console.log(x, y, board[y][x]);
   if (board[y][x] === ".") return "miss";
   if (board[y][x].endsWith("x")) return "shot";
 
