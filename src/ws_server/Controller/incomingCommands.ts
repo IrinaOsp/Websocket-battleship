@@ -136,3 +136,15 @@ export const attack = (data: string) => {
   const isAttackSuccessful = status !== "miss";
   attackMessage(x, y, game, isAttackSuccessful, IndexEnemy);
 };
+
+export const randomeAttack = (data: string) => {
+  const { gameId, indexPlayer } = JSON.parse(data);
+  attack(
+    JSON.stringify({
+      gameId,
+      x: Math.floor(Math.random() * 10),
+      y: Math.floor(Math.random() * 10),
+      indexPlayer,
+    })
+  );
+};

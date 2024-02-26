@@ -1,7 +1,7 @@
 import WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
 import { IGame, ServerCommands } from "../../types/types";
-import { Winners } from "../Users/usersDB";
+import { Winners, getUser } from "../Users/usersDB";
 import { WSConnections } from "../Connections/ws-connection";
 import { roomsList } from "../Room";
 import { Games } from "../Games/games";
@@ -21,7 +21,9 @@ export const updateWinners = () => {
     const ws = WSConnections[key];
     const message = {
       type: ServerCommands.UPDATE_WINNERS,
-      data: JSON.stringify(Winners),
+      data: JSON.stringify(
+        Winners.map((winner) => ({ name: winner.name, wins: winner.wins }))
+      ),
       id: 0,
     };
     ws.send(JSON.stringify(message));
@@ -123,4 +125,28 @@ export const attackMessage = (
   });
 
   turn(game, isAttackSuccessful);
+};
+
+export const finish = (game: IGame, winnerId: string) => {
+  const message = {
+    type: ServerCommands.FINISH,
+    data: JSON.stringify({ winPlayer: winnerId }),
+    id: 0,
+  };
+  Object.keys(WSConnections).forEach((key) => {
+    if (key === game.players[0].id || key === game.players[1].id) {
+      WSConnections[key].send(JSON.stringify(message));
+    }
+  });
+  const newWinner = Winners.find((winner) => winner.id === winnerId);
+  if (newWinner) {
+    newWinner.wins += 1;
+  } else {
+    Winners.push({
+      id: winnerId,
+      name: getUser(winnerId)?.name || "",
+      wins: 1,
+    });
+  }
+  updateWinners();
 };

@@ -26,6 +26,7 @@ export interface IUser {
 
 export interface IWinner {
   name: string;
+  id: string;
   wins: number;
 }
 

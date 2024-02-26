@@ -7,6 +7,7 @@ import {
   createRoom,
   addShips,
   attack,
+  randomeAttack,
 } from "./Controller/incomingCommands";
 
 const WS_PORT = 3000;
@@ -42,6 +43,10 @@ wsServer
           }
           case PlayersCommands.ATTACK: {
             attack(data);
+            break;
+          }
+          case PlayersCommands.RANDOM_ATTACK: {
+            randomeAttack(data);
             break;
           }
           default: {
