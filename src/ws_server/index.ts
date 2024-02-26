@@ -6,6 +6,7 @@ import {
   addUserToRoom,
   createRoom,
   addShips,
+  attack,
 } from "./Controller/incomingCommands";
 
 const WS_PORT = 3000;
@@ -37,6 +38,10 @@ wsServer
           }
           case PlayersCommands.ADD_SHIPS: {
             addShips(data);
+            break;
+          }
+          case PlayersCommands.ATTACK: {
+            attack(data);
             break;
           }
           default: {

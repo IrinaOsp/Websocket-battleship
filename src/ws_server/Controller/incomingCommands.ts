@@ -3,15 +3,18 @@ import { v4 as uuidv4 } from "uuid";
 import { IRoom, IUser, PlayersCommands } from "../../types/types";
 import { Users, getUser } from "../Users/usersDB";
 import {
+  attackMessage,
   createGame,
   regConfirmation,
   startGame,
+  turn,
   updateRoom,
   updateWinners,
 } from "./outgoingCommands";
 import { roomsList } from "../Room";
 import { WSConnections } from "../Connections/ws-connection";
 import { Games } from "../Games/games";
+import { Boards, checkAttack, createBoard } from "../Boards/boards";
 
 export const regUser = (userData: unknown, ws: WebSocket, id: string) => {
   if (typeof userData !== "string") {
@@ -99,6 +102,7 @@ export const addShips = (data: string) => {
       return null;
     }
     player.board = ships;
+    createBoard(ships, player.id);
     const boardsQuantity: number = game.players.reduce(
       (acc, player) => (player.board.length > 0 ? acc + 1 : acc),
       0
@@ -107,6 +111,28 @@ export const addShips = (data: string) => {
       game.players.forEach((player) => {
         startGame(player.id, game);
       });
+      turn(game);
     }
   }
+};
+
+export const attack = (data: string) => {
+  const { gameId, x, y, indexPlayer } = JSON.parse(data);
+  const game = Games.find((game) => game.idGame === gameId);
+  if (!game) {
+    throw new Error("Game not found");
+  }
+  if (indexPlayer !== game.currentPlayer) {
+    throw new Error("It's not your turn");
+  }
+  const enemyBoard = Boards.get(indexPlayer);
+  const IndexEnemy = game.players.find(
+    (player) => player.id !== indexPlayer
+  )?.id;
+  if (!enemyBoard || !IndexEnemy) {
+    throw new Error("Enemy or enemy board not found");
+  }
+  const status = checkAttack(enemyBoard, x, y);
+  const isAttackSuccessful = status !== "miss";
+  attackMessage(x, y, game, isAttackSuccessful, IndexEnemy);
 };

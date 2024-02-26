@@ -44,7 +44,7 @@ interface IShip {
   type: "small" | "medium" | "large" | "huge";
 }
 
-type TypeBoard = IShip[];
+export type TypeBoard = IShip[];
 
 interface IPlayer {
   id: string;
@@ -54,5 +54,7 @@ interface IPlayer {
 export interface IGame {
   idGame: string;
   players: IPlayer[];
-  currentPlayer: number;
+  currentPlayer: string;
 }
+
+export type TypeAttackStatus = "miss" | "killed" | "shot";
