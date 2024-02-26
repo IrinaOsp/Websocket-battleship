@@ -70,6 +70,9 @@ export const addUserToRoom = (data: unknown, id: string) => {
       if (!room) {
         throw new Error(`Room with id ${indexRoom} not found`);
       }
+      if (room.roomUsers.some((user) => user.index === id)) {
+        throw new Error("User already in the room");
+      }
       room.roomUsers.push({ name: getUser(id)?.name || "", index: id });
       createGame(indexRoom);
       updateRoom();
