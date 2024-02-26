@@ -4,6 +4,7 @@ import { IGame, ServerCommands } from "../../types/types";
 import { Winners } from "../Users/usersDB";
 import { WSConnections } from "../Connections/ws-connection";
 import { roomsList } from "../Room";
+import { Games } from "../Games/games";
 
 export const regConfirmation = (name: string, id: string, ws: WebSocket) => {
   ws.send(
@@ -47,9 +48,11 @@ export const createGame = (indexRoom: string) => {
   const game: IGame = {
     idGame: gameID,
     players: [],
+    currentPlayer: 0,
   };
+  Games.push(game);
   room?.roomUsers.forEach((user) => {
-    game.players.push(user.index);
+    game.players.push({ id: user.index, board: [] });
     const message = {
       type: ServerCommands.CREATE_GAME,
       data: JSON.stringify({ idGame: gameID, idPlayer: user.index }),
@@ -57,4 +60,18 @@ export const createGame = (indexRoom: string) => {
     };
     WSConnections[user.index].send(JSON.stringify(message));
   });
+};
+
+export const startGame = (playerID: string, game: IGame) => {
+  const ships = game.players.find((player) => player.id === playerID)?.board;
+  const message = {
+    type: ServerCommands.START_GAME,
+    data: JSON.stringify({
+      ships,
+      currentPlayerIndex: playerID,
+    }),
+    id: 0,
+  };
+
+  WSConnections[playerID].send(JSON.stringify(message));
 };

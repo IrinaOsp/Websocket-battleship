@@ -29,17 +29,30 @@ export interface IWinner {
   wins: number;
 }
 
-// export interface IRoom {
-//   id: string;
-//   userName: string;
-// }
-
 export interface IRoom {
   roomId: string;
   roomUsers: { name: string; index: string }[];
 }
 
+interface IShip {
+  position: {
+    x: number;
+    y: number;
+  };
+  direction: boolean;
+  length: number;
+  type: "small" | "medium" | "large" | "huge";
+}
+
+type TypeBoard = IShip[];
+
+interface IPlayer {
+  id: string;
+  board: TypeBoard | [];
+}
+
 export interface IGame {
   idGame: string;
-  players: string[];
+  players: IPlayer[];
+  currentPlayer: number;
 }

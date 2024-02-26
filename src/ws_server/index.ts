@@ -5,6 +5,7 @@ import {
   regUser,
   addUserToRoom,
   createRoom,
+  addShips,
 } from "./Controller/incomingCommands";
 
 const WS_PORT = 3000;
@@ -14,11 +15,10 @@ wsServer.on("listening", () => {
   console.log(`Start websocket server on the ${WS_PORT} port!`);
 });
 
-const id = uuidv4();
-
 wsServer
   .on("connection", (ws: WebSocket) => {
     console.log("Client connected");
+    const id = uuidv4();
     ws.on("message", (message) => {
       try {
         const { type, data } = JSON.parse(message.toString());
@@ -28,11 +28,15 @@ wsServer
             break;
           }
           case PlayersCommands.CREATE_ROOM: {
-            createRoom(ws, id);
+            createRoom(id);
             break;
           }
           case PlayersCommands.ADD_USER_TO_ROOM: {
-            addUserToRoom(data, ws, id);
+            addUserToRoom(data, id);
+            break;
+          }
+          case PlayersCommands.ADD_SHIPS: {
+            addShips(data);
             break;
           }
           default: {

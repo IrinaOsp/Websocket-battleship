@@ -5,11 +5,13 @@ import { Users, getUser } from "../Users/usersDB";
 import {
   createGame,
   regConfirmation,
+  startGame,
   updateRoom,
   updateWinners,
 } from "./outgoingCommands";
 import { roomsList } from "../Room";
 import { WSConnections } from "../Connections/ws-connection";
+import { Games } from "../Games/games";
 
 export const regUser = (userData: unknown, ws: WebSocket, id: string) => {
   if (typeof userData !== "string") {
@@ -42,7 +44,6 @@ export const regUser = (userData: unknown, ws: WebSocket, id: string) => {
       regConfirmation(data.name, id, ws);
       updateRoom();
       updateWinners();
-      return data.name;
     } catch (error) {
       ws.send(
         JSON.stringify({
@@ -55,8 +56,7 @@ export const regUser = (userData: unknown, ws: WebSocket, id: string) => {
   }
 };
 
-export const createRoom = (ws: WebSocket, id: string) => {
-  console.log("start createRoom");
+export const createRoom = (id: string) => {
   try {
     const room: IRoom = {
       roomId: uuidv4(),
@@ -71,20 +71,42 @@ export const createRoom = (ws: WebSocket, id: string) => {
   }
 };
 
-export const addUserToRoom = (data: unknown, ws: WebSocket, id: string) => {
+export const addUserToRoom = (data: unknown, id: string) => {
   if (typeof data !== "string") {
     return null;
   } else {
     try {
       const { indexRoom } = JSON.parse(data);
       const room = roomsList.find((room) => room.roomId === indexRoom);
-      if (room) {
-        room.roomUsers.push({ name: getUser(id)?.name || "", index: id });
-        updateRoom();
-        createGame(indexRoom);
+      if (!room) {
+        throw new Error(`Room with id ${indexRoom} not found`);
       }
+      room.roomUsers.push({ name: getUser(id)?.name || "", index: id });
+      createGame(indexRoom);
+      updateRoom();
     } catch (error) {
       console.log(error);
+    }
+  }
+};
+
+export const addShips = (data: string) => {
+  const { gameId, ships, indexPlayer } = JSON.parse(data);
+  const game = Games.find((game) => game.idGame === gameId);
+  if (game) {
+    const player = game.players.find((player) => player.id === indexPlayer);
+    if (!player) {
+      return null;
+    }
+    player.board = ships;
+    const boardsQuantity: number = game.players.reduce(
+      (acc, player) => (player.board.length > 0 ? acc + 1 : acc),
+      0
+    );
+    if (boardsQuantity === 2) {
+      game.players.forEach((player) => {
+        startGame(player.id, game);
+      });
     }
   }
 };
