@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
-import { IGame, ServerCommands } from "../../types/types";
+import { IGame, ServerCommands, TypeAttackStatus } from "../../types/types";
 import { Winners, getUser } from "../Users/usersDB";
 import { WSConnections } from "../Connections/ws-connection";
 import { roomsList } from "../Room";
@@ -80,13 +80,10 @@ export const startGame = (playerID: string, game: IGame) => {
 };
 
 export const turn = (game: IGame, isAttackSuccessful: boolean = true) => {
-  console.log("start turn");
   const nextPlayerID: string | undefined = !isAttackSuccessful
     ? game.players.find((player) => player.id !== game.currentPlayer)?.id
     : game.currentPlayer;
-  console.log("nextPlayerID", nextPlayerID);
   game.currentPlayer = nextPlayerID || game.currentPlayer;
-  console.log("after", game);
 
   Object.keys(WSConnections).forEach((key) => {
     if (key === game.players[0].id || key === game.players[1].id) {
@@ -105,7 +102,7 @@ export const attackMessage = (
   x: number,
   y: number,
   game: IGame,
-  isAttackSuccessful: boolean,
+  status: TypeAttackStatus,
   secondPlayerID: string
 ) => {
   const message = {
@@ -113,7 +110,7 @@ export const attackMessage = (
     data: JSON.stringify({
       position: { x, y },
       currentPlayer: game.currentPlayer,
-      isAttackSuccessful,
+      status,
     }),
     id: 0,
   };
@@ -123,7 +120,7 @@ export const attackMessage = (
       WSConnections[key].send(JSON.stringify(message));
     }
   });
-
+  const isAttackSuccessful = status !== "miss";
   turn(game, isAttackSuccessful);
 };
 

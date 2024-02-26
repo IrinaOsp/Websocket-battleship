@@ -54,7 +54,7 @@ wsServer
           }
         }
       } catch (error) {
-        console.log(error);
+        console.log(error instanceof Error ? error.message : "Unknown error");
       }
     });
     ws.on("close", () => {

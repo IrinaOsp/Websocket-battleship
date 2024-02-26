@@ -5,6 +5,7 @@ import { Users, getUser } from "../Users/usersDB";
 import {
   attackMessage,
   createGame,
+  finish,
   regConfirmation,
   startGame,
   turn,
@@ -14,7 +15,12 @@ import {
 import { roomsList } from "../Room";
 import { WSConnections } from "../Connections/ws-connection";
 import { Games } from "../Games/games";
-import { Boards, checkAttack, createBoard } from "../Boards/boards";
+import {
+  Boards,
+  checkAttack,
+  checkIfFinal,
+  createBoard,
+} from "../Boards/boards";
 
 export const regUser = (userData: unknown, ws: WebSocket, id: string) => {
   if (typeof userData !== "string") {
@@ -125,16 +131,24 @@ export const attack = (data: string) => {
   if (indexPlayer !== game.currentPlayer) {
     throw new Error("It's not your turn");
   }
-  const enemyBoard = Boards.get(indexPlayer);
   const IndexEnemy = game.players.find(
     (player) => player.id !== indexPlayer
   )?.id;
+  const enemyBoard = Boards.get(IndexEnemy!);
   if (!enemyBoard || !IndexEnemy) {
     throw new Error("Enemy or enemy board not found");
   }
   const status = checkAttack(enemyBoard, x, y);
-  const isAttackSuccessful = status !== "miss";
-  attackMessage(x, y, game, isAttackSuccessful, IndexEnemy);
+  console.log(status);
+  if (status === "killed") {
+    const isFinal = checkIfFinal(enemyBoard);
+    if (isFinal) {
+      finish(game, indexPlayer);
+      return;
+    }
+  }
+
+  attackMessage(x, y, game, status, IndexEnemy);
 };
 
 export const randomeAttack = (data: string) => {
