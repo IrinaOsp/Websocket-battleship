@@ -21,9 +21,25 @@ export enum ServerCommands {
 export interface IUser {
   name: string;
   password: string;
+  id: string;
 }
 
 export interface IWinner {
   name: string;
   wins: number;
+}
+
+// export interface IRoom {
+//   id: string;
+//   userName: string;
+// }
+
+export interface IRoom {
+  roomId: string;
+  roomUsers: { name: string; index: string }[];
+}
+
+export interface IGame {
+  idGame: string;
+  players: string[];
 }
